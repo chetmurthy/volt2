@@ -1,0 +1,55 @@
+# OASIS_START
+# DO NOT EDIT (digest: b03a98177ea4809b38cc5e5a0f88cfaa)
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
+# useless stuff for the build process
+true: annot, bin_annot
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Library bolt
+"lib/bolt.cmxs": use_bolt
+"lib/configLexer.cmx": for-pack(Bolt)
+"lib/configParser.cmx": for-pack(Bolt)
+"lib/configuration.cmx": for-pack(Bolt)
+"lib/configurationNew.cmx": for-pack(Bolt)
+"lib/configurationOld.cmx": for-pack(Bolt)
+"lib/daikon.cmx": for-pack(Bolt)
+"lib/event.cmx": for-pack(Bolt)
+"lib/filter.cmx": for-pack(Bolt)
+"lib/layout.cmx": for-pack(Bolt)
+"lib/level.cmx": for-pack(Bolt)
+"lib/log4j.cmx": for-pack(Bolt)
+"lib/logger.cmx": for-pack(Bolt)
+"lib/mode.cmx": for-pack(Bolt)
+"lib/name.cmx": for-pack(Bolt)
+"lib/output.cmx": for-pack(Bolt)
+"lib/paje.cmx": for-pack(Bolt)
+"lib/signal.cmx": for-pack(Bolt)
+"lib/tree.cmx": for-pack(Bolt)
+"lib/utils.cmx": for-pack(Bolt)
+"lib/version.cmx": for-pack(Bolt)
+# Library bolt-thread
+"lib/bolt-thread.cmxs": use_bolt-thread
+<lib/*.ml{,i,y}>: pkg_threads
+# Library boltpp
+"src/boltpp.cmxs": use_boltpp
+<src/*.ml{,i,y}>: pkg_camlp4.extend
+<src/*.ml{,i,y}>: pkg_camlp4.quotations.o
+<src/*.ml{,i,y}>: use_bolt
+# Executable simple
+"examples/simple.byte": pkg_dynlink
+"examples/simple.byte": pkg_unix
+"examples/simple.byte": use_bolt
+<examples/*.ml{,i,y}>: pkg_dynlink
+<examples/*.ml{,i,y}>: pkg_unix
+<examples/*.ml{,i,y}>: use_bolt
+# OASIS_STOP
+"examples/simple.ml": pp(camlp4o src/boltpp.cma -level TRACE9)

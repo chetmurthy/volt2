@@ -1,0 +1,43 @@
+OASISFormat: 0.4
+Name:        volt
+Version:     0.1
+Synopsis:    Camlp4 syntax extension example.
+Authors:     Sylvain Le Gall
+License:     LGPL-2.1 with OCaml linking exception
+Plugins:     META (0.4), DevFiles(0.4)
+
+PreConfCommand: touch lib/version.ml
+PreBuildCommand: echo "let value = \"1.4\"\n" > lib/version.ml
+
+Library bolt
+  Pack: true
+  BuildTools: ocamlbuild
+  FindlibName: volt
+  Path: lib
+  Modules: ConfigLexer, ConfigParser, Configuration, ConfigurationNew, ConfigurationOld,
+    Daikon, Event, Filter, Layout, Level, Log4j, Logger, Mode, Name, Output, Paje,
+    Signal, Tree, Utils, Version
+  XMetaRequires: unix, dynlink
+
+Library "bolt-thread"
+  BuildTools: ocamlbuild
+  FindlibParent: bolt
+  Path: lib
+  Modules: BoltThread
+  BuildDepends: threads
+
+Library boltpp
+  Path:       src
+  BuildTools: ocamlbuild
+  Modules:    Bolt_pp
+  XMETAType: syntax
+  FindlibParent: bolt
+  FindlibName: syntax
+  BuildDepends: camlp4.extend, camlp4.quotations.o, volt
+
+Executable "simple"
+  Path: examples
+  BuildTools: ocamlbuild
+  MainIs: simple.ml
+  BuildDepends: volt, unix, dynlink
+  Install: false
