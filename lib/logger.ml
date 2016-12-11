@@ -44,28 +44,31 @@ let log_event name level file line column properties error msg =
       ~properties:properties
       ~error:error
       msg in
+  let log_and_pass logger event =
+    let _, _, layout = Lazy.force logger.Tree.layout in
+    let mode = logger.Tree.mode in
+    let output = Lazy.force logger.Tree.output in
+    let filter = Lazy.force logger.Tree.filter in
+    let pass = Lazy.force logger.Tree.pass in
+    if (level <= logger.Tree.level) && (filter event) then
+      mode#deliver output (layout event);
+    pass event in
+
   let loggers = Tree.get_loggers name in
-  try
-    List.iter
-      (fun (nam, lst) ->
-	let event = Event.with_logger nam orig_event in
-	List.iter
-          (fun logger ->
-            try
-              let _, _, layout = Lazy.force logger.Tree.layout in
-              let mode = logger.Tree.mode in
-              let output = Lazy.force logger.Tree.output in
-              let filter = Lazy.force logger.Tree.filter in
-	      let pass = Lazy.force logger.Tree.pass in
-              if (level <= logger.Tree.level) && (filter event) then
-		mode#deliver output (layout event);
-	      if not (pass event) then
-		raise Exit
-            with Exit -> raise Exit | _ -> ())
-          lst)
-      loggers
-  with
-    Exit -> ()
+
+  let rec lrec rest_loggers event l =
+    match rest_loggers, l with
+    | [],[] -> ()
+    | _, logger::tl ->
+       if not (log_and_pass logger event) then ()
+       else lrec rest_loggers event tl
+    | (nam,loggers)::tl, [] ->
+       lrec tl (Event.with_logger nam orig_event) loggers
+  in
+  match loggers with
+    [] -> ()
+  | (nam,loggers)::rest_loggers ->
+     lrec rest_loggers (Event.with_logger nam orig_event) loggers
 
 let check_level name level =
 (*
@@ -73,15 +76,9 @@ let check_level name level =
 *)
   let name = Name.of_string name in
   let loggers = Tree.get_loggers name in
-  try
-    List.iter
-      (fun (_, lst) ->
-	if List.exists (fun logger -> level <= logger.Tree.level) lst then
-	  raise Exit
-      ) loggers;
-    false
-  with
-    Exit -> true
+  List.exists (fun (_, lst) ->
+    List.exists (fun logger -> level <= logger.Tree.level) lst)
+    loggers
 
 let logf name level ?(file="") ?(line=(-1)) ?(column=(-1)) ?(properties=[]) ?(error=None) fmt =
   let f msg =

@@ -63,16 +63,18 @@ let rec get_node name_elements path current_node =
   match name_elements with
   | hd :: tl ->
       let path = hd :: path in
-      (try
-        get_node tl path (StringMap.find hd current_node.children)
-      with Not_found ->
-        let new_node =
+      if StringMap.mem hd current_node.children then
+	let v = StringMap.find hd current_node.children in
+	get_node tl path v
+      else
+	let new_node =
           { parent = Some current_node;
             path = Name.of_list (List.rev path);
             loggers = [];
             children = StringMap.empty; } in
         current_node.children <- StringMap.add hd new_node current_node.children;
-        get_node tl path new_node)
+        get_node tl path new_node
+
   | [] -> current_node
 
 let get_node name =
